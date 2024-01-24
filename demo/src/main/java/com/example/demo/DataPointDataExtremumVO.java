@@ -39,4 +39,6 @@ public class DataPointDataExtremumVO implements Serializable {
      * 平均值
      */
     private Double avg;
+
+    // 3
 }
