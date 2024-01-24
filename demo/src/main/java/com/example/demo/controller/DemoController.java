@@ -15,6 +15,7 @@ import org.elasticsearch.search.aggregations.metrics.ParsedMin;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -24,11 +25,17 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -130,5 +137,33 @@ public class DemoController {
             res.add(vo);
         }
         return res;
+    }
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @GetMapping("/redis")
+    public void redis(String key,Integer value) {
+        // redisTemplate.opsForValue().set(key, value + "");
+        stringRedisTemplate.opsForValue().set(key, value + "");
+    }
+
+    @GetMapping("/rediss")
+    public Object rediss(String key) {
+        String o = (String) redisTemplate.opsForValue().get(key);
+        return o;
+    }
+
+
+    public static void main(String[] args) {
+        int dayOfMonth = LocalDate.of(2022, 10, 1).atStartOfDay().minusDays(1).getDayOfMonth();
+        long savePlus = dayOfMonth * (24 * 60 * 60 * 1000L);
+        long dataPlus = 24 * 60 * 60 * 1000L;
+        long end = LocalDate.of(2022, 10, 1).atStartOfDay().toInstant(ZoneOffset.ofHours(8)).toEpochMilli() - dataPlus;
+        long start = end - savePlus;
+        System.out.println(start);
     }
 }
